@@ -1,6 +1,6 @@
 # Code for Calibration of Disutility of Labor parameters
 
-This folder contains the code to calibrate the `S` disutility of labor parameters `chi^n_s` in the `S`-period overlapping generations model from Chapter 7, "S-period-lived Agents with Endogenous Labor" of the textbook, *Overlapping Generations Models for Policy Analysis: Theory and Computation*. This code also solves for the steady-state and transition path equilibrium solutions. The files needed to run the model are the following five Python scripts and modules:
+This folder contains the code to calibrate the `S` disutility of labor parameters `chi^n_s` in the `S`-period overlapping generations model from Chapter 7, "S-period-lived Agents with Endogenous Labor" of the textbook, *Overlapping Generations Models for Policy Analysis: Theory and Computation*. This code also solves for the steady-state and transition path equilibrium solutions. The files needed to run the model are the following eight Python scripts and modules:
 
 * `execute.py`
 * `SS.py`
