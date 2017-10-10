@@ -1,0 +1,210 @@
+\documentclass[letterpaper,12pt]{article}
+
+\usepackage{threeparttable}
+\usepackage{geometry}
+\geometry{letterpaper,tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in}
+\usepackage[format=hang,font=normalsize,labelfont=bf]{caption}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{delarray}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{lscape}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{float,color}
+\usepackage[pdftex]{graphicx}
+\usepackage{pdfsync}
+\usepackage{verbatim}
+\usepackage{placeins}
+\usepackage{geometry}
+\usepackage{pdflscape}
+\synctex=1
+\usepackage{hyperref}
+\hypersetup{colorlinks,linkcolor=red,urlcolor=blue,citecolor=red}
+\usepackage{bm}
+
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}{Definition} % Number definitions on their own
+\newtheorem{derivation}{Derivation} % Number derivations on their own
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}{Proposition} % Number propositions on their own
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\bibliographystyle{aer}
+\newcommand\ve{\varepsilon}
+%\renewcommand\theenumi{\roman{enumi}}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+
+\begin{document}
+
+\title{Calibration notes for Endogenous Labor OG Model}
+\date{\today}
+\author{Richard W. Evans and Jason DeBacker}
+\maketitle
+
+\pagenumbering{arabic}
+
+
+\section{Two methods (but really just one)}
+
+  There are two methods to calibrate the $\chi^n_s$ parameters of the OG model with endogenous labor. The first is to use the $S$ initial-period labor supply Euler equations. The second is to use GMM to match average labor supply moments from the model steady-state to average labor supply moments from the data. The first method is orders of magnitude more simple, more intuitive, and more tractable.
+
+  % \subsection{Initial period labor supply Euler equations}
+
+  %   In the model from Chapter 7 of the textbook, the general form of the labor supply Euler equation is the following.
+  %   \begin{equation}\label{EqHHeuler_ns}
+  %     w_t\left(c_{s,t}\right)^{-\sigma} = \chi^n_s\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}} \quad\forall s, t
+  %   \end{equation}
+  %   We have already estimated the elliptic utility parameter values of $b$ and $\upsilon$, and we have calibrated the value for $\sigma$ from other studies.
+
+  %   All the consumption $c_{s,t}$ and wage $w_t$ values in the set of equations represented by \eqref{EqHHeuler_ns} are given in consumption units (consumption is the numeraire good). So $w_t$ represents the units of consumption that a worker is paid for each unit of labor supplied. And the implicit price of one unit of consumption is one consumption unit. This can be seen from the budget constraint.
+  %   \begin{equation}\label{EqHHbc}
+  %     c_{s,t} + b_{s+1,t+1} = (1 + r_t)b_{s,t} + w_t n_{s,t}
+  %   \end{equation}
+  %   For this reason, $c_{s,t}$ also represents the total individual consumption expenditure of age-$s$ household at in period $t$.
+
+  %   We have assumed that $\tilde{l}=1$. Regardless of the value, the appearance of $\frac{n_{s,t}}{\tilde{l}}$ on the right-hand-side of \eqref{EqHHeuler_ns} is a unit-free percent of total time endowment. However, both consumption $c_{s,t}$ and wages $w_t$ on the left-hand-side of \eqref{EqHHeuler_ns} have model specific units. The first step toward overcoming this issue of using real world data in this model specific equation is to divide both sides of \eqref{EqHHeuler_ns} by some single aggregate or average variable from the model that will create unit-free versions of $w_t$ and $c_{s,t}$. We choose average individual income here $\bar{y}_t$ because that is a value we end up using when we incorporate tax functions into the model. Dividing both sides of \eqref{EqHHeuler_ns} by $(\bar{y}_t)^{1-\sigma}$ gives the following expression.
+  %   \begin{equation}\label{EqHHeuler_ns_norm}
+  %     \begin{split}
+  %       \left(\frac{w_t}{\bar{y}_t}\right)\left(\frac{c_{s,t}}{\bar{y}_t}\right)^{-\sigma} &= \left[\frac{\chi^n_s}{(\bar{y}_t)^{1-\sigma}}\right]\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}} \quad\forall s, t \\
+  %       &\text{where}\quad \bar{y}_t \equiv \frac{1}{S}\sum_{s=1}^S\left(r_t b_{s,t} + w_t n_{s,t}\right) \quad\forall t
+  %     \end{split}
+  %   \end{equation}
+  %   Note that $w_t$ and $c_{s,t}$ in consumption units from the left-hand-side of \eqref{EqHHeuler_ns} are transformed into unit-free values relative to average individual income on the left-hand-side of \eqref{EqHHeuler_ns_norm}.
+
+  %   Solving \eqref{EqHHeuler_ns_norm} for $\chi^n_s$ gives the following expression.
+  %   \begin{equation}\label{EqChi_n_s}
+  %     \begin{split}
+  %       \chi^n_s &= \frac{(\bar{y}_t)^{1-\sigma}\left(\frac{w_t}{\bar{y}_t}\right)\left(\frac{c_{s,t}}{\bar{y}_t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t \\
+  %       &\qquad\qquad\text{where}\quad \bar{y}_t \equiv \frac{1}{S}\sum_{s=1}^S\left(r_t b_{s,t} + w_t n_{s,t}\right) \quad\forall t
+  %     \end{split}
+  %   \end{equation}
+  %   All the terms on the right-hand-side of \eqref{EqChi_n_s} are unit-free except for the lone instance of average individual income $\bar{y}_t$ in the numerator. All other terms with endogenous variables are in percent of average income or percent of time endowment.
+
+  %   With real world data on average income $\bar{y}_t$, consumption expenditures by each age group $\{c_{s,t}\}_{s=1}^S$, labor supply by each age group $\{n_{s,t}\}_{s=1}^S$, and parameter values for the total time endowment of each individual $\tilde{l}$, the coefficient of relative risk aversion $\sigma$, and the elliptical utility parameters $b$ and $\upsilon$, we can simply solve each equation for $\chi^n_s$ up to a constant factor that is the same for each $\chi^n_s$.
+
+  %   The constant factor is related to the term $(\bar{y}_t)^{1-\sigma}$ in the numerator of \eqref{EqChi_n_s}, which is unavoidably in model units of consumption.  But we do know that average individual income in the data is proportional to average individual model income.
+  %   \begin{equation}\label{EqDataModelIncome}
+  %     \bar{y}_t = \bar{y}^{data}_t \times factor_t \quad\text{or}\quad factor_t = \frac{\bar{y}_t}{\bar{y}^{data}_t} \quad\forall t
+  %   \end{equation}
+
+  %   For tractability reasons, we calibrate $\chi^n_s$ to the steady-state values of average individual income rather than the more theoretically appropriate initial-period average individual income. Because we have to solve the model in order to know what the model average income is in the steady-state, which solution is a function of the parameter values $\chi^n_s$, we cannot know ex ante what the factor is to transform real world average income into model average income. But we can just include equation \eqref{EqDataModelIncome} as one of our outer-loop equations and $factor_t$ as one of our outer-loop variables along with $\bar{r}$ in the steady-state computational approach.
+
+
+  % \subsection{Summary and recap}
+
+  %   In summary, in the steady-state, for a given guess of $\bar{r}$ and $\overline{factor}$, we can use real world data to solve exactly for all the $\chi^n_s$ values,
+  %   \begin{equation}\label{EqChi_n_s_SS}
+  %     \chi^n_s = \frac{\left(\bar{y}^{data}_t \times\overline{factor}\right)^{1-\sigma}\left(\frac{w_t}{\bar{y}_t}\right)\left(\frac{c_{s,t}}{\bar{y}_t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s \\
+  %   \end{equation}
+  %   where the ratios $\frac{w_t}{\bar{y}_t}$, $\frac{c_{s,t}}{\bar{y}_t}$, and $\frac{n_{s,t}}{\tilde{l}}$ are values taken from the data. Because of these age-specific data, the values of the $\chi^n_s$ parameters will have the correct relative shape, but all of their levels will be off by the same factor.
+
+  %   Given the guess for $\bar{r}$, $\overline{factor}$, and the corresponding $\chi^n_s$ values, we can solve for the steady-state household decisions $\{\bar{n}_s\}_{s=1}^S$ and $\{\bar{b}_s\}_{s=2}^S$. From these decisions, we can compute the corresponding steady-state interest rate $\bar{r}$ and average household income in the model $\bar{y}$. We update $\bar{r}$ and $\overline{factor}$ until the interest rate and factor implied by household optimization equal the initial guess.
+
+  %   Because the difference between model units and real world units might be multiple orders of magnitude, it is helpful to get the initial guess for $\overline{factor}$ near its true value. A good strategy is to compute the steady-state of the model assuming that $\chi^n_s=1$ for all $s$. This means that only $\bar{r}$ is in the outer loop. Use the resulting $\bar{y}$ to derive an initial guess for $\overline{factor}$ according to \eqref{EqDataModelIncome}. This should get your initial guess in the neighborhood of the final value.
+
+
+% \section{Jason Alternative Explanation/Derivation}
+
+\subsection{Initial period labor supply Euler equations}
+
+  In the model from Chapter 7 of the textbook, the general form of the labor supply Euler equation is the following.
+  \begin{equation}\label{EqHHeuler_ns}
+    w_t\left(c_{s,t}\right)^{-\sigma} = \chi^n_s\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}} \quad\forall s, t
+  \end{equation}
+  We have already estimated the elliptic utility parameter values of $b$ and $\upsilon$, and we have calibrated the value for $\sigma$ from other studies.
+
+  All the consumption $c_{s,t}$ and wage $w_t$ values in the set of equations represented by \eqref{EqHHeuler_ns} are given in consumption units (consumption is the numeraire good). So $w_t$ represents the units of consumption that a worker is paid for each unit of labor supplied. And the implicit price of one unit of consumption is one consumption unit. This can be seen from the budget constraint.
+  \begin{equation}\label{EqHHbc}
+    c_{s,t} + b_{s+1,t+1} = (1 + r_t)b_{s,t} + w_t n_{s,t}
+  \end{equation}
+  For this reason, $c_{s,t}$ also represents the total individual consumption expenditure of age-$s$ household at in period $t$.
+
+  One may identify the $\chi^{n}_{s}$ via a method of moments estimation that uses Equation \ref{EqHHeuler_ns} as the set of moment conditions and data on consumption, wages, and labor supply.  However, the estimates of $\chi^{n}_{s}$ will depend upon the units of measurement for wages and consumption.  Thus we could only identify the $\chi^{n}_{s}$ from the model up to a scale.  This is clearly seen if we rearrange Equation \ref{EqHHeuler_ns} to isolate $\chi^{n}_{s}$ on the left hand side:
+
+  \begin{equation}\label{EqChi_ns}
+    \chi^n_s = \frac{w_t\left(c_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t
+  \end{equation}
+
+
+  \subsection{Scaling}
+  We have assumed that $\tilde{l}=1$. Regardless of the value, the appearance of $\frac{n_{s,t}}{\tilde{l}}$ denominator on the right-hand-side of \eqref{EqChi_ns} is a unit-free percent of total time endowment. However, both consumption $c_{s,t}$ and wages $w_t$ on the right-hand-side of \eqref{EqChi_ns} are in model units (consumption units).
+
+  To overcome this identification issue, consider a scaling that relates model units to data units.  Call this parameter $factor_t$ and define it as:
+
+  \begin{equation}\label{EqDataModelIncome}
+    factor_t = \frac{\bar{y}^{data}_t}{\bar{y}^{model}_t} \quad\forall t \ \implies \bar{y}^{data}_t = \bar{y}^{model}_t \times factor_t
+  \end{equation}
+
+  In other words, $factor$ scales model units to data units for those variables measured in consumption units in the model and nominal amounts in the data.  Thus we also have the relations
+
+  \begin{equation}
+    \begin{split}
+      & w^{model}_{t} \times factor_{t} = w^{data}_{t} \\
+      & c^{model}_{s,t} \times factor_{t} = c^{data}_{s,t}
+    \end{split}
+  \end{equation}
+
+  With this, we can return to Equation \ref{EqChi_ns}.  Let's write two versions of this equation.  One that identifies the $\chi^{n}_{s}$ in the model and one that identifies it's data counterpart.  To be clear, let $\chi^{n}_{s}$ be the model version and $\hat{\chi}^{n}_{s}$ represent the $\chi^{n}_{s}$ to be identified from the data.  Thus we have:
+
+  \begin{equation}\label{EqChi_ns_model}
+    \chi^n_s = \frac{w^{model}_t\left(c^{model}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t
+  \end{equation}
+
+  and
+
+  \begin{equation}\label{EqChi_ns_data}
+    \hat{\chi}^n_s = \frac{w^{data}_t\left(c^{data}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t \quad\text{where}\quad \hat{\chi}^n_s\equiv factor_t^{1-\sigma}\chi^n_s
+  \end{equation}
+
+  Note that for brevity, we do not have $data$ or $model$ superscripts on the labor supply terms.  This is because, as noted above, labor supply is always divided by labor endowment and so the ratio is in percentages both in the data and the model.
+
+  Now let's do some algebra with Equation \ref{EqChi_ns_model}:
+
+  \begin{equation}\label{EqChi_ns_model_algebra}
+    \begin{split}
+      \chi^n_s & = \frac{w^{model}_t\left(c^{model}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t \\
+      \implies factor^{1-\sigma}_{t} \chi^{n}_{s} & = \frac{factor^{1-\sigma}_{t}w^{model}_t\left(c^{model}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t \\
+      \implies factor^{1-\sigma}_{t} \chi^{n}_{s} & = \frac{\left(factor_{t}w^{model}_t\right)\left(factor_{t} c^{model}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}} \quad\forall s, t \\
+      \implies factor^{1-\sigma}_{t} \chi^{n}_{s} & = \underbrace{\frac{w^{data}_t\left( c^{data}_{s,t}\right)^{-\sigma}}{\left(\frac{b}{\tilde{l}}\right)\left(\frac{n_{s,t}}{\tilde{l}}\right)^{\upsilon-1}\Biggl[1 - \left(\frac{n_{s,t}}{\tilde{l}}\right)^\upsilon\Biggr]^{\frac{1-\upsilon}{\upsilon}}}}_{=\hat{\chi}^{n}_{s}} \quad\forall s, t \\
+      \implies \hat{\chi}^n_s &\equiv factor^{1-\sigma}_{t} \chi^{n}_{s} \quad\forall s, t
+    \end{split}
+  \end{equation}
+
+  Thus, by estimating $\hat{\chi}^{n}_{s}$ using the data on wages, consumption, and labor supply, one finds the model parameters up to a scale.  That scale is function of the model scale parameter, $factor_{t}$.
+
+  \subsection{Changes to Model Solution Algorithm}
+  In theory, one wants to use the factor from model period $t$, where model period $t$ corresponds to they year of your data (e.g., if the data are from 2017 and your initial period in the time path of your model is 2017, then you'd want determine the factor as $factor_{0}=\frac{\bar{y}^{data}_{2017}}{\bar{y}^{model}_{0}}$).  Because it depends on mean model income, the factor is endogenous and depends upon $\chi^{n}_{s}$.  Therefore, there is the need for some fixed point algorithm: guess a $factor$, use that to determine $\chi^{n}_{s}$, solve the model and see if mean income in the data divided by mean income in the model returns the factor you guess, if not, update and do again.  To compute the time path at each step in this fixed point algorithm would be very expensive.  We therefore make a simplifying assumption.  In particular, we assume that the factor is determined as the ratio of income in data from year $t$ and from the model's steady state.  That is,
+
+  \begin{equation}
+    factor_{t}=factor=\frac{\bar{y}^{data}_{2017}}{\bar{y}^{model}_{SS}} \ \forall t
+  \end{equation}
+
+  While not a perfect mapping, this means that at each iteration of the fixed point algorithm that solves for the model $factor$ only the steady state needs to be computed.  Also note that the model income represents real, stationarized income.  So growth and inflation are not affecting this measurement, which helps this approximation be more accurate.
+
+  The modification to the algorithm to solve the steady state in Chapter 7 need only be modified to include the guess of $factor$ as one of our outer-loop variables along with $\bar{r}$ in the steady-state computational approach.  Given the guess for $\bar{r}$ and $factor$ one can use the relation in Equation \ref{EqChi_ns_model_algebra} to transform the $\hat{\chi}^{n}_{s}$ into the model-scaled parameter. With these $\chi^n_s$ values, we can solve for the steady-state household decisions $\{\bar{n}_s\}_{s=1}^S$ and $\{\bar{b}_s\}_{s=2}^S$. From these decisions, we can compute the corresponding steady-state interest rate $\bar{r}$ and average household income in the model $\bar{y}$. We update $\bar{r}$ and $factor$ until the interest rate and factor implied by steady state equilibrium equal the guesses of $\bar{r}$ and $factor$ at that iteration.  Once the steady state is solved and $factor$ is determined, then this same factor is applied over the time path, so no adjustment is needed for that solution method.
+
+  \subsubsection{A Note About Initial the Initial Guess for $factor$}
+  Because the difference between model units and real world units might be multiple orders of magnitude, it is helpful to get the initial guess for $factor$ near its true value. If one has trouble finding an initial guess that will not break the model, a good strategy is to compute the steady-state of the model assuming that $\chi^n_s=1$ for all $s$. This means that only $\bar{r}$ is in the outer loop. Use the resulting $\bar{y}$ to derive an initial guess for $factor$ according to \eqref{EqDataModelIncome}. This should get your initial guess in the neighborhood of the final value.
+
+
+\end{document}
