@@ -95,7 +95,7 @@ def get_consump(periods, min_yr, max_yr, graph = False):
         minorLocator = MultipleLocator(1)
         ax.xaxis.set_minor_locator(minorLocator)
         plt.grid(b=True , which ='major ', color ='0.65 ', linestyle ='-')
-        plt.title('Average consumption expenditure by age b $c(s^i)$', fontsize =15)
+        plt.title('Average consumption expenditure by age $c(s^i)$', fontsize =15)
         plt.xlabel(r'Age $s$ ')
         plt.ylabel(r' Consumption $c(s^i)$')
         plt.xlim((-3 , 113))
