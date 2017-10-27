@@ -47,7 +47,7 @@ def get_consump(periods, min_yr, max_yr, graph = False):
                      life
 
     FILES CREATED BY THIS FUNCTION:
-        consump_by_age.png
+        cons_by_age.png
     RETURNS: consump
     --------------------------------------------------------------------
     '''
@@ -103,7 +103,7 @@ def get_consump(periods, min_yr, max_yr, graph = False):
         plt.legend(loc='upper right ')
         plt.annotate('Source : Consumer Expenditure ' + 'Survey (CEX ), 2016 Summary Data .', (0,0), (0, -32), xycoords='axes fraction', textcoords='offset points', va='top')
         plt.tight_layout( rect =(0 , 0.03 , 1, 1))
-        output_path = os.path.join(output_dir, "consumpt_by_age")
+        output_path = os.path.join(output_dir, "cons_by_age")
         plt.savefig(output_path)
         plt.close()
 
