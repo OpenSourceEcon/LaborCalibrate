@@ -177,7 +177,7 @@ def get_SS(init_vals, args, calibrate_n=False, graphs=False):
     cvec_data  = (S, ) vector, consumption by age from 2016 data
     w_data     = scalar, average yearly wage from 2016 data
     y_bar_data = scalar, average household income before tax from 2016 data
-    n_data     = (S, ) vector, (unit-free) labor supply by age from 2016 data,
+    n_data     = (S, ) vector, (unit-free) labor supply by age from 2016 data
     chi_n_vec  = (S,) vector, values for chi^n_s
     A          = scalar > 0, total factor productivity parameter in
                  firms' production function
