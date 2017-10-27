@@ -28,3 +28,4 @@ dist/*
 .DS_Store
 *puf.csv
 */OUTPUT/*
+*/__pycache__/*
