@@ -147,7 +147,8 @@ def get_SS(init_vals, args, calibrate_n=False, graphs=False):
                 (S, beta, sigma, l_tilde, b_ellip, upsilon, A, alpha,
                 delta, Bsct_Tol, Factor_tol, Eul_Tol, EulDiff, xi_ss, xi_factor,
                 maxiter) if calibrate_n = True
-    graphs    = boolean, =True if output steady-state graphs
+    calibrate_n= boolean, =True if calibrate disutility of labor
+    graphs     = boolean, =True if output steady-state graphs
 
     OTHER FUNCTIONS AND FILES CALLED BY THIS FUNCTION:
         firms.get_r()
