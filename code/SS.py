@@ -174,10 +174,11 @@ def get_SS(init_vals, args, calibrate_n=False, graphs=False):
                  of labor
     upsilon    = scalar > 1, fitted value of upsilon for elliptical
                  disutility of labor
-    cvec_data  = (S, ) vector, consumption by age from 2016 data
+    cvec_data  = (S,) vector, consumption by age from 2016 data
     w_data     = scalar, average yearly wage from 2016 data
     y_bar_data = scalar, average household income before tax from 2016 data
-    n_data     = (S, ) vector, (unit-free) labor supply by age from 2016 data
+    n_data     = (S,) vector, (unit-free) labor supply by age from 2016 data
+    chi_n_hat  = (S,) vector, data version of chi_n_vec
     chi_n_vec  = (S,) vector, values for chi^n_s
     A          = scalar > 0, total factor productivity parameter in
                  firms' production function
@@ -268,12 +269,12 @@ def get_SS(init_vals, args, calibrate_n=False, graphs=False):
         n_data = np.concatenate((n_data, np.ones(S - 65) * n_data[-1]))
         r_init, c1_init, factor_init = init_vals
         rw_params = (A, alpha, delta)
-        chi_n_vec_hat = (w_data * cvec_data) ** (-sigma)/ \
+        chi_n_hat = (w_data * cvec_data) ** (-sigma)/ \
                         ((b_ellip / l_tilde) * n_data ** (upsilon - 1) * \
                          (1 - (n_data) ** upsilon) ** ((1 - upsilon) / upsilon))
         while (iter_SS < maxiter) and (SS_dist >= Bsct_Tol or factor_dist >= Factor_tol):
             iter_SS += 1
-            chi_n_vec = factor_init ** (sigma - 1) * chi_n_vec_hat
+            chi_n_vec = factor_init ** (sigma - 1) * chi_n_hat
             w_init = firms.get_w(r_init, rw_params)
             inner_args = (c1_init, S, beta, sigma, l_tilde, b_ellip,
                           upsilon, chi_n_vec, A, alpha, delta, EulDiff,
