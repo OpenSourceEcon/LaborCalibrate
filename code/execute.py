@@ -54,13 +54,19 @@ delta          = scalar in [0,1], model-period depreciation rate of
                  capital
 SS_solve       = boolean, =True if want to solve for steady-state
                  solution, otherwise retrieve solutions from pickle
+SS_BsctTol     = scalar > 0, tolerance level for steady-state bisection method in
+                 outer-loop
 SS_EulTol      = scalar > 0, tolerance level for steady-state inner-loop
                  root finder
 SS_graphs      = boolean, =True if want graphs of steady-state objects
 SS_EulDiff     = boolean, =True if use simple differences in Euler
                  errors. Otherwise, use percent deviation form.
+calibrate_n    = boolean, =True if calibrate for chi_n_vec, disutility of labor
 xi_SS          = scalar in (0, 1], SS updating parameter in outer-loop
                  bisection method
+xi_factor      = scalar in (0, 1], factor updating parameter in outer-loop
+Factor_tol     = scalar > 0, tolerance level for steady-state factor in
+                 outer-loop
 SS_maxiter     = integer >= 1, maximum iterations of outer-loop steady-
                  state bisection method
 T1             = integer > S, number of time periods until steady state
@@ -98,12 +104,15 @@ SS_BsctTol = 1e-13
 SS_EulTol = 1e-13
 SS_graphs = True
 SS_EulDiff = True
+calibrate_n = True
 xi_SS = 0.15
 SS_maxiter = 200
+xi_factor = 0.2
+Factor_tol = 1e-9
 # TPI parameters
 T1 = int(round(2.0 * S))
 T2 = int(round(2.5 * S))
-TPI_solve = True
+TPI_solve = False
 TPI_OutTol = 1e-13
 TPI_InTol = 1e-13
 maxiter_TPI = 200
@@ -153,6 +162,7 @@ ss_paramsfile  = string, path name of file for SS parameter objects
 ss_args        = length 15 tuple, arguments to pass in to ss.get_SS()
 rss_init       = scalar > -delta, initial guess for r_ss
 c1_init        = scalar > 0, initial guess for c1
+factor_init    = scalar > 0, initial guess for factor
 init_vals      = length 2 tuple, initial guesses (r, c1) to be passed
                  in to ss.get_SS
 ss_output      = length 14 dict, steady-state objects {n_ss, b_ss, c_ss,
@@ -176,18 +186,24 @@ ss_outputfile = os.path.join(ss_output_dir, 'ss_vars.pkl')
 ss_paramsfile = os.path.join(ss_output_dir, 'ss_args.pkl')
 
 # Compute steady-state solution
-ss_args = (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A,
-           alpha, delta, SS_BsctTol, SS_EulTol, SS_EulDiff, xi_SS,
-           SS_maxiter)
 
 if SS_solve:
     print('BEGIN EQUILIBRIUM STEADY-STATE COMPUTATION')
     rss_init = 0.06
     c1_init = 0.1
-    init_vals = (rss_init, c1_init)
+    if calibrate_n:
+        factor_init = 59415.5012 # y_bar_data / y_bar_model when setting chi_n_vec = 1
+        init_vals = (rss_init, c1_init, factor_init)
+        ss_args = (S, beta, sigma, l_tilde, b_ellip, upsilon, A, alpha,
+        delta, SS_BsctTol, Factor_tol, SS_EulTol, SS_EulDiff, xi_SS, xi_factor, SS_maxiter)
+    else:
+        init_vals = (rss_init, c1_init)
+        ss_args = (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A,
+                   alpha, delta, SS_BsctTol, SS_EulTol, SS_EulDiff, xi_SS,
+                   SS_maxiter)
 
     print('Solving SS outer loop using bisection method on r.')
-    ss_output = ss.get_SS(init_vals, ss_args, SS_graphs)
+    ss_output = ss.get_SS(init_vals, ss_args, calibrate_n, SS_graphs)
 
     # Save ss_output as pickle
     pickle.dump(ss_output, open(ss_outputfile, 'wb'))

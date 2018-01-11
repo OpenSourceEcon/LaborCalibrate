@@ -27,13 +27,14 @@ import households as hh
 import firms
 import aggregates as aggr
 import utilities as utils
+import consumption as consump
+import hrs_by_age as hrs
 
 '''
 ------------------------------------------------------------------------
     Functions
 ------------------------------------------------------------------------
 '''
-
 
 def inner_loop(r, w, args):
     '''
@@ -130,7 +131,7 @@ def inner_loop(r, w, args):
             b_errors)
 
 
-def get_SS(init_vals, args, graphs=False):
+def get_SS(init_vals, args, calibrate_n=False, graphs=False):
     '''
     --------------------------------------------------------------------
     Solve for the steady-state solution of the S-period-lived agent OG
@@ -138,11 +139,16 @@ def get_SS(init_vals, args, graphs=False):
     and L for the outer loop
     --------------------------------------------------------------------
     INPUTS:
-    init_vals = length 2 tuple, (rss_init, c1_init)
-    args      = length 15 tuple, (S, beta, sigma, l_tilde, b_ellip,
+    init_vals = length 2 or 3 tuple, (rss_init, c1_init) if calibrate_n=False;
+                (rss_init, c1_init, factor_init) if calibrate_n=True
+    args      = length 15 or 16 tuple, (S, beta, sigma, l_tilde, b_ellip,
                 upsilon, chi_n_vec, A, alpha, delta, Bsct_Tol, Eul_Tol,
-                EulDiff, xi, maxiter)
-    graphs    = boolean, =True if output steady-state graphs
+                EulDiff, xi, maxiter) if calibrate_n = False;
+                (S, beta, sigma, l_tilde, b_ellip, upsilon, A, alpha,
+                delta, Bsct_Tol, Factor_tol, Eul_Tol, EulDiff, xi_ss, xi_factor,
+                maxiter) if calibrate_n = True
+    calibrate_n= boolean, =True if calibrate disutility of labor
+    graphs     = boolean, =True if output steady-state graphs
 
     OTHER FUNCTIONS AND FILES CALLED BY THIS FUNCTION:
         firms.get_r()
@@ -150,12 +156,15 @@ def get_SS(init_vals, args, graphs=False):
         utils.print_time()
         inner_loop()
         creat_graphs()
+        consumption()
+        hrs_by_age()
 
     OBJECTS CREATED WITHIN FUNCTION:
     start_time = scalar > 0, clock time at beginning of program
     r_init     = scalar > -delta, initial guess for steady-state
                  interest rate
     c1_init    = scalar > 0, initial guess for first period consumpt'n
+    factor_init= scalar > 0, initial guess for factor
     S          = integer in [3, 80], number of periods an individual
                  lives
     beta       = scalar in (0,1), discount factor for each model per
@@ -165,6 +174,11 @@ def get_SS(init_vals, args, graphs=False):
                  of labor
     upsilon    = scalar > 1, fitted value of upsilon for elliptical
                  disutility of labor
+    cvec_data  = (S,) vector, consumption by age from 2016 data
+    w_data     = scalar, average yearly wage from 2016 data
+    y_bar_data = scalar, average household income before tax from 2016 data
+    n_data     = (S,) vector, (unit-free) labor supply by age from 2016 data
+    chi_n_hat  = (S,) vector, data version of chi_n_vec
     chi_n_vec  = (S,) vector, values for chi^n_s
     A          = scalar > 0, total factor productivity parameter in
                  firms' production function
@@ -177,12 +191,14 @@ def get_SS(init_vals, args, graphs=False):
     EulDiff    = Boolean, =True if want difference version of Euler
                  errors beta*(1+r)*u'(c2) - u'(c1), =False if want
                  ratio version [beta*(1+r)*u'(c2)]/[u'(c1)] - 1
-    xi         = scalar in (0, 1], SS updating parameter in outer-loop
+    xi_SS      = scalar in (0, 1], SS updating parameter in outer-loop
                  bisection method
+    xi_factor  = scalar in (0, 1], factor updating parameter in outer-loop
     maxiter    = integer >= 1, maximum number of iterations in outer
                  loop bisection method
     iter_SS    = integer >= 0, index of iteration number
-    dist       = scalar > 0, distance metric for current iteration
+    SS_dist    = scalar > 0, distance metric for r in current iteration
+    factor_dist= scalar > 0, distance metric for factor in current iteration
     c1_options = length 1 dict, options to pass into
                  opt.root(c1_bSp1err,...)
     rw_params  = length 3 tuple, (A, alpha, delta) args to pass into
@@ -199,6 +215,9 @@ def get_SS(init_vals, args, graphs=False):
                  should be arbitrarily close to zero
     r_new      = scalar > 0, updated interest rate given bvec and nvec
     w_new      = scalar > 0, updated wage given bvec and nvec
+    y_dar_model= scalar > 0, average household income from model, given r_init
+                 and factor_init
+    factor_new = scalar > 0, updated wage given y_bar_data and y_bar_model
     n_errors   = (S,) vector, labor supply Euler errors given r_init
                  and w_init
     b_errors   = (S-1,) vector, savings Euler errors given r_init and
@@ -233,28 +252,64 @@ def get_SS(init_vals, args, graphs=False):
     --------------------------------------------------------------------
     '''
     start_time = time.clock()
-    r_init, c1_init = init_vals
-    (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A, alpha,
-        delta, Bsct_Tol, Eul_Tol, EulDiff, xi, maxiter) = args
     iter_SS = 0
-    dist = 10
+    SS_dist = 10
     c1_options = {'maxiter': 500}
-    rw_params = (A, alpha, delta)
-    while (iter_SS < maxiter) and (dist >= Bsct_Tol):
-        iter_SS += 1
-        w_init = firms.get_w(r_init, rw_params)
 
-        inner_args = (c1_init, S, beta, sigma, l_tilde, b_ellip,
-                      upsilon, chi_n_vec, A, alpha, delta, EulDiff,
-                      Eul_Tol, c1_options)
-        (K_new, L_new, cvec, nvec, bvec, b_Sp1, r_new, w_new, n_errors,
-            b_errors) = inner_loop(r_init, w_init, inner_args)
-        all_errors = np.hstack((n_errors, b_errors, b_Sp1))
-        dist = (np.absolute(r_new - r_init)).sum()
-        r_init = xi * r_new + (1 - xi) * r_init
-        print('SS Iter=', iter_SS, ', SS Dist=', '%10.4e' % (dist),
-              ', Max Abs Err=', '%10.4e' %
-              (np.absolute(all_errors).max()))
+    if calibrate_n:
+        cur_path = os.path.split(os.path.abspath(__file__))[0]
+        dir = os.path.join(cur_path, 'data')
+        (S, beta, sigma, l_tilde, b_ellip, upsilon, A, alpha,
+        delta, Bsct_Tol, Factor_tol, Eul_Tol, EulDiff, xi_ss, xi_factor, maxiter) = args
+        cvec_data = consump.get_consump(S, 15, 15 + S - 1)
+        # average yearly wage and income from data
+        w_data = 46662.59
+        y_bar_data = 74664
+        n_data = hrs.hrs_by_age('dec16', 'dec16', dir, 65, l_tilde = 45)
+        n_data = np.concatenate((n_data, np.ones(S - 65) * n_data[-1]))
+        r_init, c1_init, factor_init = init_vals
+        rw_params = (A, alpha, delta)
+        chi_n_hat = (w_data * cvec_data) ** (-sigma)/ \
+                        ((b_ellip / l_tilde) * n_data ** (upsilon - 1) * \
+                         (1 - (n_data) ** upsilon) ** ((1 - upsilon) / upsilon))
+        while (iter_SS < maxiter) and (SS_dist >= Bsct_Tol or factor_dist >= Factor_tol):
+            iter_SS += 1
+            chi_n_vec = factor_init ** (sigma - 1) * chi_n_hat
+            w_init = firms.get_w(r_init, rw_params)
+            inner_args = (c1_init, S, beta, sigma, l_tilde, b_ellip,
+                          upsilon, chi_n_vec, A, alpha, delta, EulDiff,
+                          Eul_Tol, c1_options)
+            (K_new, L_new, cvec, nvec, bvec, b_Sp1, r_new, w_new, n_errors,
+                b_errors) = inner_loop(r_init, w_init, inner_args)
+            # Calculate average household income from model
+            y_bar_model = (r_init * bvec + w_init * nvec).mean()
+            factor_new = y_bar_data / y_bar_model
+            all_errors = np.hstack((n_errors, b_errors, b_Sp1))
+            SS_dist = (np.absolute(r_new - r_init)).sum()
+            factor_dist = np.absolute(factor_new - factor_init)
+            r_init = xi_ss * r_new + (1 - xi_ss) * r_init
+            factor_init = xi_factor * factor_new + (1 - xi_factor) * factor_init
+            print('SS Iter=', iter_SS, ', SS Dist=', '%10.4e' % (SS_dist),
+                  ', Factor Dist=', '%10.4e' % (factor_dist), ', Max Abs Err=', '%10.4e' %
+                  (np.absolute(all_errors).max()))
+    else:
+        r_init, c1_init = init_vals
+        (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A, alpha,
+        delta, Bsct_Tol, Eul_Tol, EulDiff, xi, maxiter) = args
+        rw_params = (A, alpha, delta)
+        while (iter_SS < maxiter) and (SS_dist >= Bsct_Tol):
+            iter_SS += 1
+            w_init = firms.get_w(r_init, rw_params)
+
+            inner_args = (c1_init, S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A, alpha, delta, EulDiff, Eul_Tol, c1_options)
+            (K_new, L_new, cvec, nvec, bvec, b_Sp1, r_new, w_new, n_errors,
+                b_errors) = inner_loop(r_init, w_init, inner_args)
+            all_errors = np.hstack((n_errors, b_errors, b_Sp1))
+            SS_dist = (np.absolute(r_new - r_init)).sum()
+            r_init = xi * r_new + (1 - xi) * r_init
+            print('SS Iter=', iter_SS, ', SS Dist=', '%10.4e' % (SS_dist),
+                  ', Max Abs Err=', '%10.4e' %
+                  (np.absolute(all_errors).max()))
 
     c_ss = cvec.copy()
     n_ss = nvec.copy()
