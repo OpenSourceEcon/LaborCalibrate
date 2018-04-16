@@ -1,0 +1,22 @@
+
+{
+    "calibration":{
+        "S": 80,
+        "time_endowment":4000,
+        "hours_worked_file_name": "ITA_lhw",
+        "hours_worked_file_years": "2008 2010 2012 2014",
+        "hours_worked_file_parameter": "avg",
+        "hours_worked_file_parameter2": "N",
+        "consumption_file_name": "ITA_inc_exp_v2",
+        "consumption_file_parameter": "avg_expenditure",
+        "consumption_file_parameter2": "avg_income",
+        "consumption_file_year": 2012,
+        "file_extensions": "dta",
+        "population_by_age_file_name": "ITA_Eurostat_pop_by_age.xlsx",
+        "population_by_age_sheet_name": "pop_trend",
+        "population_by_age_file_parameter": "avg_pop_2012",
+        "files_path": "./calib_data/"
+    }
+
+}
+
