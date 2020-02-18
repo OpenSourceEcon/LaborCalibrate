@@ -172,6 +172,7 @@ SS_tol_outer = 1e-8
 SS_tol_inner = 1e-13
 SS_maxiter = 400
 SS_graphs = True
+SS_LaborCalib = True
 xi_SS = 0.3
 
 # TPI parameters
@@ -329,7 +330,7 @@ if SS_solve:
                      beta, sigma, l_tilde, b_ellip, upsilon, g_y, Z,
                      gamma, delta, SS_tol_outer, SS_tol_inner, xi_SS,
                      SS_maxiter, mean_ydata, init_calc)
-    print(ss_args_noclb)
+    # print(ss_args_noclb)
     ss_output_noclb = ss.get_SS(ss_init_vals, ss_args_noclb, False)
     # Save ss_output as pickle
     pickle.dump(ss_output_noclb, open(ss_outfile_noclb, 'wb'))
