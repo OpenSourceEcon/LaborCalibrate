@@ -80,14 +80,14 @@ def euler_sys(guesses, *args):
     RETURNS: array of n_errors and b_errors
     --------------------------------------------------------------------
     '''
-    (r, w, beta, sigma, l_tilde, chi_n_vec, b_ellip, upsilon, diff, S,
-     SS_tol) = args
+    (r, w, beta, sigma, l_tilde, chi_n_vec, b_ellip, upsilon, diff,
+        S) = args
     nvec = guesses[:S]
     bvec1 = guesses[S:]
 
-    bvec = np.append(0.0, bvec1)
-    b_sp1 = np.append(bvec[1:], 0.0)
-    cvec = hh.get_cons(r, w, bvec, b_sp1, nvec)
+    b_s = np.append(0.0, bvec1)
+    b_sp1 = np.append(bvec1, 0.0)
+    cvec = hh.get_cons(r, w, b_s, b_sp1, nvec)
     n_args = (w, sigma, l_tilde, chi_n_vec, b_ellip, upsilon, diff,
               cvec)
     n_errors = hh.get_n_errors(nvec, *n_args)
@@ -185,7 +185,31 @@ def inner_loop(r, w, args):
             b_errors)
 
 
-def get_SS(init_vals, args, graphs=False):
+def get_r_error(r_init, *args):
+    (nb_guess, S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A,
+        alpha, delta, Eul_Tol, EulDiff) = args
+    # Solve for steady-state w as a function of r
+    w_args = (A, alpha, delta)
+    w = firms.get_w(r_init, w_args)
+    # Solve for steady-state household decisions n_s and b_sp1 given w
+    # and r
+    euler_args = (r_init, w, beta, sigma, l_tilde, chi_n_vec, b_ellip,
+                  upsilon, EulDiff, S)
+    results_nb = opt.root(euler_sys, nb_guess, args=euler_args,
+                          method='lm', tol=Eul_Tol)
+    n_s = results_nb.x[:S]
+    b_sp1 = results_nb.x[S:]
+    # Solve for aggregate capital K and labor L given n_s and b_sp1
+    K = b_sp1.sum()
+    L = n_s.sum()
+    # Solve for implied new value of r
+    r_new = alpha * A * ((L / K) ** (1 - alpha)) - delta
+    r_error = r_new - r_init
+
+    return r_error
+
+
+def get_SS(r_init, args, graphs=False):
     '''
     --------------------------------------------------------------------
     Solve for the steady-state solution of the S-period-lived agent OG
@@ -286,61 +310,59 @@ def get_SS(init_vals, args, graphs=False):
     --------------------------------------------------------------------
     '''
     start_time = time.clock()
-    r_init, c1_init = init_vals
     (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A, alpha,
-     delta, Bsct_Tol, Eul_Tol, EulDiff, xi, maxiter) = args
-    iter_SS = 0
-    dist = 10
-    nvec_init = np.ones(S) * 0.4
-    bvec_init = np.append(0.0, np.ones(S - 1) * 0.05)
-    rw_params = (A, alpha, delta)
-    while (iter_SS < maxiter) and (dist >= Bsct_Tol):
-        iter_SS += 1
-        w_init = firms.get_w(r_init, rw_params)
-        inner_args = (nvec_init, bvec_init, S, beta, sigma, l_tilde,
-                      b_ellip, upsilon, chi_n_vec, A, alpha, delta,
-                      EulDiff, Eul_Tol)
-        (K_new, L_new, cvec, nvec, bvec, b_Sp1, r_new, w_new, n_errors,
-            b_errors) = inner_loop(r_init, w_init, inner_args)
-        all_errors = np.hstack((n_errors, b_errors, b_Sp1))
-        dist = (np.absolute(r_new - r_init)).sum()
-        r_init = xi * r_new + (1 - xi) * r_init
-        print('SS Iter=', iter_SS, ', SS Dist=', '%10.4e' % (dist),
-              ', Max Abs Err=', '%10.4e' %
-              (np.absolute(all_errors).max()))
-
-    c_ss = cvec
-    n_ss = nvec
-    b_ss = bvec
-    b_Sp1_ss = b_Sp1
-    n_err_ss = n_errors
-    b_err_ss = b_errors
-    r_ss = r_new
-    w_ss = w_new
-    K_ss = K_new
-    L_ss = L_new
+     delta, SS_Tol, Eul_Tol, EulDiff, xi, maxiter) = args
+    ns_guess = 0.4 * l_tilde * np.ones(S)
+    bsp1_guess = 0.1 * np.ones(S - 1)
+    nb_guess = np.append(ns_guess, bsp1_guess)
+    r_args = (nb_guess, S, beta, sigma, l_tilde, b_ellip, upsilon,
+              chi_n_vec, A, alpha, delta, Eul_Tol, EulDiff)
+    results_r = opt.root(get_r_error, r_init, args=r_args, tol=SS_Tol)
+    if results_r.success:
+        print('SS SUCCESS: Steady-state outer loop for r converged.')
+    r_ss = results_r.x
+    r_err_ss = results_r.fun
+    # Solve for steady-state w as a function of steady-state r
+    w_args = (A, alpha, delta)
+    w_ss = firms.get_w(r_ss, w_args)
+    # Solve for steady-state n_s and b_s given steady-state r and w
+    euler_args = (r_ss, w_ss, beta, sigma, l_tilde, chi_n_vec, b_ellip,
+                  upsilon, EulDiff, S)
+    results_nb = opt.root(euler_sys, nb_guess, args=euler_args,
+                          method='lm', tol=Eul_Tol)
+    n_ss = results_nb.x[:S]
+    bsp1_ss = results_nb.x[S:]
+    n_err_ss = results_nb.fun[:S]
+    b_err_ss = results_nb.fun[S:]
+    b_ss = np.append(0.0, bsp1_ss)
+    c_ss = hh.get_cons(r_ss, w_ss, b_ss, np.append(bsp1_ss, 0.0), n_ss)
+    K_ss = bsp1_ss.sum()
+    L_ss = n_ss.sum()
+    I_ss = delta * K_ss
     Y_params = (A, alpha)
     Y_ss = aggr.get_Y(K_ss, L_ss, Y_params)
     C_ss = aggr.get_C(c_ss)
-    RCerr_ss = Y_ss - C_ss - delta * K_ss
+    RCerr_ss = Y_ss - C_ss - I_ss
 
     ss_time = time.clock() - start_time
 
     ss_output = {
-        'c_ss': c_ss, 'n_ss': n_ss, 'b_ss': b_ss, 'b_Sp1_ss': b_Sp1_ss,
-        'w_ss': w_ss, 'r_ss': r_ss, 'K_ss': K_ss, 'L_ss': L_ss,
-        'Y_ss': Y_ss, 'C_ss': C_ss, 'n_err_ss': n_err_ss,
-        'b_err_ss': b_err_ss, 'RCerr_ss': RCerr_ss, 'ss_time': ss_time}
+        'c_ss': c_ss, 'n_ss': n_ss, 'b_ss': b_ss, 'w_ss': w_ss,
+        'r_ss': r_ss, 'K_ss': K_ss, 'L_ss': L_ss, 'Y_ss': Y_ss,
+        'I_ss': I_ss, 'C_ss': C_ss, 'n_err_ss': n_err_ss,
+        'b_err_ss': b_err_ss, 'r_err_ss': r_err_ss,
+        'RCerr_ss': RCerr_ss, 'ss_time': ss_time}
     print('n_ss is: ', n_ss)
     print('b_ss is: ', b_ss)
     print('K_ss=', K_ss, ', L_ss=', L_ss)
+    print('Y_ss=', Y_ss, ', I_ss=', I_ss, ', C_ss=', C_ss)
     print('r_ss=', r_ss, ', w_ss=', w_ss)
     print('Maximum abs. labor supply Euler error is: ',
           np.absolute(n_err_ss).max())
     print('Maximum abs. savings Euler error is: ',
           np.absolute(b_err_ss).max())
+    print('Interest rate FOC error is: ', r_err_ss)
     print('Resource constraint error is: ', RCerr_ss)
-    print('Steady-state residual savings b_Sp1 is: ', b_Sp1_ss)
 
     # Print SS computation time
     utils.print_time(ss_time, 'SS')
