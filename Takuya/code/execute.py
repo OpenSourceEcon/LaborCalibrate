@@ -103,7 +103,7 @@ SS_maxiter = 200
 # TPI parameters
 T1 = int(round(2.0 * S))
 T2 = int(round(2.5 * S))
-TPI_solve = True
+TPI_solve = False
 TPI_OutTol = 1e-7
 TPI_InTol = 1e-13
 maxiter_TPI = 200
@@ -183,11 +183,8 @@ ss_args = (S, beta, sigma, l_tilde, b_ellip, upsilon, chi_n_vec, A,
 if SS_solve:
     print('BEGIN EQUILIBRIUM STEADY-STATE COMPUTATION')
     rss_init = 0.06
-    c1_init = 0.1
-    init_vals = (rss_init, c1_init)
-
-    print('Solving SS outer loop using bisection method on r.')
-    ss_output = ss.get_SS(init_vals, ss_args, SS_graphs)
+    print('Solving SS outer loop using root finder on r.')
+    ss_output = ss.get_SS(rss_init, ss_args, SS_graphs)
 
     # Save ss_output as pickle
     pickle.dump(ss_output, open(ss_outputfile, 'wb'))
